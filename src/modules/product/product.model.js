@@ -18,6 +18,10 @@ const productSchema = new Schema(
 		description_en: {
 			type: String,
 		},
+		slug: {
+			type: String,
+			required: true,
+		},
 		image: {
 			type: Object,
 			required: true,
@@ -27,6 +31,9 @@ const productSchema = new Schema(
 			ref: 'Subcategory',
 			required: true,
 		},
+        keywords: {
+            type: [String]
+        }
 	},
 	{
 		timestamps: true,

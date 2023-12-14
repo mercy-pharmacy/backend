@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, Types } from 'mongoose'
+import mongoose, { Schema, Types, model } from 'mongoose'
 
 const subcategorySchema = new Schema(
 	{
@@ -30,8 +30,20 @@ const subcategorySchema = new Schema(
 	},
 	{
 		timestamps: true,
+		toJSON: {
+			virtuals: true,
+		},
+		toObject: {
+			virtuals: true,
+		},
 	},
 )
+
+subcategorySchema.virtual('products', {
+	ref: 'Product',
+	localField: '_id',
+	foreignField: 'subcategoryId',
+})
 
 const subcategoryModel = mongoose.models.Subcategory || model('Subcategory', subcategorySchema)
 
