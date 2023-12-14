@@ -8,5 +8,6 @@ const router = Router()
 router
 	.route('/')
 	.post(isAdmin, fileUpload(fileValidation.image).single('image'), productController.createProduct)
-
+    
+router.get('/search/:word', productController.searchProducts)
 export default router

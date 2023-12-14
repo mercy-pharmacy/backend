@@ -18,14 +18,13 @@ export const createSubcategory = async (req = request, res = response) => {
 	}
 	const subcategory = await subcategoryModel.findOne({ name_ar, name_en, categoryId })
 	if (subcategory) {
-		return res.json(409).json({ message: 'this subcategroy already exists.' })
+		return res.status(409).json({ message: 'this subcategroy already exists.' })
 	}
 	const newSubcategory = await subcategoryModel.create({
 		name_en,
 		name_ar,
 		description_ar,
 		description_en,
-		slug: slugify(category.name_en),
 		categoryId,
 	})
 	return res.status(201).json({ message: 'success', subcategory: newSubcategory })

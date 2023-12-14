@@ -28,7 +28,6 @@ export const createCategory = async (req = request, res = response) => {
 		name_en,
 		description_ar,
 		description_en,
-		slug: slugify(name_en),
 		image: { secure_url, public_id },
 	})
 	return res.status(201).json({ message: 'success', category: newCategory })
@@ -87,8 +86,6 @@ export const updateCategory = async (req = request, res = response) => {
 	existingCategory.name_ar = name_ar || existingCategory.name_ar
 	existingCategory.description_en = description_en || existingCategory.description_en
 	existingCategory.description_ar = description_ar || existingCategory.description_ar
-	// update slug if the name is changed
-	if (name_en) existingCategory.slug = slugify(name_en)
 
 	if (req.file) {
 		const { secure_url, public_id } = await cloudinaryUploadImage(

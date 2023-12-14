@@ -1,4 +1,5 @@
-import mongoose, { Schema, model, Types } from 'mongoose'
+import mongoose, { Schema, Types, model } from 'mongoose'
+import subcategoryModel from '../subcategory/subcategory.model.js'
 
 const productSchema = new Schema(
 	{
@@ -18,10 +19,6 @@ const productSchema = new Schema(
 		description_en: {
 			type: String,
 		},
-		slug: {
-			type: String,
-			required: true,
-		},
 		image: {
 			type: Object,
 			required: true,
@@ -31,12 +28,18 @@ const productSchema = new Schema(
 			ref: 'Subcategory',
 			required: true,
 		},
-        keywords: {
-            type: [String]
-        }
+		keywords: {
+			type: [String],
+		},
 	},
 	{
 		timestamps: true,
+		toJSON: {
+			virtuals: true,
+		},
+		toObject: {
+			virtuals: true,
+		},
 	},
 )
 

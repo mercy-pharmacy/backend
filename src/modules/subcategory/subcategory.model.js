@@ -1,4 +1,6 @@
 import mongoose, { Schema, Types, model } from 'mongoose'
+import slugify from 'slugify'
+import categoryModel from '../category/category.model.js'
 
 const subcategorySchema = new Schema(
 	{
@@ -17,10 +19,6 @@ const subcategorySchema = new Schema(
 		},
 		description_en: {
 			type: String,
-		},
-		slug: {
-			type: String,
-			required: true,
 		},
 		categoryId: {
 			type: Types.ObjectId,
