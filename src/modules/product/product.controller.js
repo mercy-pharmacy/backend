@@ -28,10 +28,37 @@ export const createProduct = async (req = request, res = response) => {
 		name_en,
 		description_ar,
 		description_en,
-		slug: subcategory.slug,
 		image: { secure_url, public_id },
 		subcategoryId,
 		keywords,
 	})
 	return res.status(201).json({ message: 'success', product: newProduct })
+}
+
+/** ----------------------------------------------------------------
+ * @desc search products
+ * @route /products/search/:word
+ * @method get
+ * @access ALL
+   -----------------------------------------------------------------
+ */
+export const searchProducts = async (req = request, res = response) => {
+	const { word } = req.params
+	const products = await productModel
+		.find({
+			$or: [
+				{ name_en: { $regex: new RegExp(word, 'i') } },
+				{ name_ar: { $regex: new RegExp(word, 'i') } },
+				{ keywords: { $in: [word] } },
+			],
+		})
+		.populate({
+			path: 'subcategoryId',
+			select: 'name_en name_ar',
+			populate: {
+				path: 'categoryId',
+				select: 'name_en name_ar slug image',
+			},
+		})
+	return res.status(200).json({ message: 'success', products })
 }

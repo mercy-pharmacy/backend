@@ -1,8 +1,8 @@
 import { Router } from 'express'
 import isAdmin from '../../middlewares/isAdmin.js'
+import validateObjectId from '../../middlewares/validateObjectId.js'
 import fileUpload, { fileValidation } from '../../services/multer.js'
 import * as categoryController from './category.controller.js'
-import validateObjectId from '../../middlewares/validateObjectId.js'
 const router = Router()
 
 router

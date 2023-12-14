@@ -1,4 +1,5 @@
 import mongoose, { Schema, model, Types } from 'mongoose'
+import slugify from 'slugify'
 
 const categorySchema = new Schema(
 	{
@@ -18,10 +19,6 @@ const categorySchema = new Schema(
 		description_en: {
 			type: String,
 		},
-		slug: {
-			type: String,
-			required: true,
-		},
 		image: {
 			type: Object,
 			required: true,
@@ -29,12 +26,12 @@ const categorySchema = new Schema(
 	},
 	{
 		timestamps: true,
-        toJSON: {
-            virtuals: true,
-        },
-        toObject: {
-            virtuals: true
-        }
+		toJSON: {
+			virtuals: true,
+		},
+		toObject: {
+			virtuals: true,
+		},
 	},
 )
 
@@ -42,6 +39,10 @@ categorySchema.virtual('subcategories', {
 	ref: 'Subcategory',
 	localField: '_id',
 	foreignField: 'categoryId',
+})
+
+categorySchema.virtual('slug').get(function () {
+	return slugify(this.name_en, { lower: true })
 })
 
 const categoryModel = mongoose.models.Category || model('Category', categorySchema)
