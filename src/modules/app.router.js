@@ -1,7 +1,8 @@
-import connectDB from "../../DB/connection.js"
+import connectDB from '../../DB/connection.js'
+import productsRouter from './product/product.router.js'
+import { globalErrorHandling } from '../services/errorHandling.js'
 import categoriesRouter from './category/category.router.js'
 import subcategoryRouter from './subcategory/subcategory.router.js'
-import productsRouter from './product/product.router.js'
 
 const initApp = (app, express) => {
 	app.use(express.json())
@@ -15,6 +16,8 @@ const initApp = (app, express) => {
 	app.get('*', (req, res) => {
 		return res.status(404).json({ message: 'page not found ' + req.originalUrl })
 	})
+
+	app.use(globalErrorHandling)
 }
 
 export default initApp

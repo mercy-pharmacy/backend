@@ -1,7 +1,7 @@
 import { request, response } from 'express'
-import productModel from './product.model.js'
 import subcategoryModel from '../subcategory/subcategory.model.js'
-import { cloudinaryUploadImage } from '../../services/cloudinary.js'
+import { cloudinaryRemoveImage, cloudinaryUploadImage } from '../../services/cloudinary.js'
+import productModel from './product.model.js'
 
 /** ----------------------------------------------------------------
  * @desc create new product
@@ -10,15 +10,20 @@ import { cloudinaryUploadImage } from '../../services/cloudinary.js'
  * @access only admin
    -----------------------------------------------------------------
  */
-export const createProduct = async (req = request, res = response) => {
+export const createProduct = async (req = request, res = response, next) => {
 	const { name_en, name_ar, description_en, description_ar, subcategoryId, keywords } = req.body
 	const subcategory = await subcategoryModel.findById(subcategoryId)
 	if (!subcategory) {
-		return res.status(404).json({ message: `this subcategory with id [${subcategoryId}] not found.` })
+		return next(new Error(`this subcategory with id [${subcategoryId}] not found.`, { cause: 404 }))
 	}
-	const product = await productModel.findOne({ name_en, name_ar, subcategoryId })
-	if (product) return res.status(409).json({ message: 'this product already exists.' })
-	if (!req.file) return res.status(400).json({ message: 'product image is required.' })
+	const product = await productModel.findOne({
+		$or: [
+			{ name_ar, subcategoryId },
+			{ name_en, subcategoryId },
+		],
+	})
+	if (product) return next(new Error('this product already exists.', { cause: 409 }))
+	if (!req.file) return next(new Error('product image is required.', { cause: 400 }))
 	const { secure_url, public_id } = await cloudinaryUploadImage(
 		req.file.path,
 		`${process.env.APP_NAME}/products`,
@@ -36,29 +41,84 @@ export const createProduct = async (req = request, res = response) => {
 }
 
 /** ----------------------------------------------------------------
- * @desc search products
- * @route /products/search/:word
- * @method get
+ * @desc update product
+ * @route /products/:productId
+ * @method PUT
+ * @access inly admin
+   -----------------------------------------------------------------
+ */
+export const updateProduct = async (req = request, res = response, next) => {
+	const { productId } = req.params
+	const product = await productModel.findById(productId)
+	if (!product) {
+		return next(new Error(`product with id [${productId}] not found.`, { cause: 404 }))
+	}
+	const { name_en, name_ar, description_en, description_ar, subcategoryId, keywords } = req.body
+	if (subcategoryId) {
+		const subcategory = await subcategoryModel.findById(subcategoryId)
+		if (!subcategory) {
+			return next(new Error(`subcategory with id [${subcategoryId}] not found.`, { cause: 404 }))
+		}
+		product.subcategoryId = subcategoryId
+	}
+	product.name_ar = name_ar || product.name_ar
+	product.name_en = name_en || product.name_en
+	product.description_en = description_en || product.description_en
+	product.description_ar = description_ar || product.description_ar
+	product.keywords = keywords || product.keywords
+	if (req.file) {
+		const { secure_url, public_id } = await cloudinaryUploadImage(
+			req.file.path,
+			`${process.env.APP_NAME}/products`,
+		)
+		await cloudinaryRemoveImage(product.image.public_id)
+		product.image = { secure_url, public_id }
+	}
+	await product.save()
+	return res.status(200).json({ message: 'success update', product })
+}
+
+/** ----------------------------------------------------------------
+ * @desc get product
+ * @route /products/:productId
+ * @method GET
  * @access ALL
    -----------------------------------------------------------------
  */
-export const searchProducts = async (req = request, res = response) => {
-	const { word } = req.params
-	const products = await productModel
-		.find({
-			$or: [
-				{ name_en: { $regex: new RegExp(word, 'i') } },
-				{ name_ar: { $regex: new RegExp(word, 'i') } },
-				{ keywords: { $in: [word] } },
-			],
-		})
-		.populate({
-			path: 'subcategoryId',
-			select: 'name_en name_ar',
-			populate: {
-				path: 'categoryId',
-				select: 'name_en name_ar slug image',
-			},
-		})
+export const getProduct = async (req = request, res = response, next) => {
+	const { productId } = req.params
+	const product = await productModel.findById(productId).populate({
+		path: 'subcategoryId',
+		populate: {
+			path: 'categoryId',
+		},
+	})
+	if (!product) {
+		return next(new Error(`product with id [${productId}] not found.`, { cuase: 404 }))
+	}
+	return res.status(200).json({ message: 'success', product })
+}
+
+/** ----------------------------------------------------------------
+ * @desc get products
+ * @route /products
+ * @method GET
+ * @access ALL
+   -----------------------------------------------------------------
+ */
+export const getProducts = async (req = request, res = response, next) => {
+	let filter = {}
+	const { search } = req.query
+	if (search) {
+		filter = {
+			$text: { $search: search },
+		}
+	}
+	const products = await productModel.find(filter).populate({
+		path: 'subcategoryId',
+		populate: {
+			path: 'categoryId',
+		},
+	})
 	return res.status(200).json({ message: 'success', products })
 }

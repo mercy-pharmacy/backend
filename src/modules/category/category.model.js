@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, Types } from 'mongoose'
+import mongoose, { Schema, model } from 'mongoose'
 import slugify from 'slugify'
 
 const categorySchema = new Schema(

@@ -1,5 +1,4 @@
 import { request, response } from 'express'
-import slugify from 'slugify'
 import { cloudinaryRemoveImage, cloudinaryUploadImage } from '../../services/cloudinary.js'
 import categoryModel from './category.model.js'
 
@@ -10,14 +9,14 @@ import categoryModel from './category.model.js'
  * @access only admin
    -----------------------------------------------------------------
  */
-export const createCategory = async (req = request, res = response) => {
+export const createCategory = async (req = request, res = response, next) => {
 	const { name_en, name_ar, description_en, description_ar } = req.body
-	const category = await categoryModel.findOne({ name_ar, name_en })
+	const category = await categoryModel.findOne({ $or: [{ name_ar }, { name_en }] })
 	if (category) {
-		return res.json(409).json({ message: 'this categroy already exists.' })
+		return next(new Error('this categroy already exists.', { cause: 409 }))
 	}
 	if (!req.file) {
-		return res.status(400).json({ message: 'category image is required.' })
+		return next(new Error('category image is required.', { cause: 400 }))
 	}
 	const { secure_url, public_id } = await cloudinaryUploadImage(
 		req.file.path,
@@ -40,7 +39,7 @@ export const createCategory = async (req = request, res = response) => {
  * @access ALL
    -----------------------------------------------------------------
  */
-export const getCategories = async (req = request, res = response) => {
+export const getCategories = async (req = request, res = response, next) => {
 	const categories = await categoryModel.find().populate({
 		path: 'subcategories',
 		populate: {
@@ -57,7 +56,7 @@ export const getCategories = async (req = request, res = response) => {
  * @access ALL
    -----------------------------------------------------------------
  */
-export const getCategory = async (req = request, res = response) => {
+export const getCategory = async (req = request, res = response, next) => {
 	const { categoryId } = req.params
 	const category = await categoryModel.findById(categoryId).populate({
 		path: 'subcategories',
@@ -65,6 +64,9 @@ export const getCategory = async (req = request, res = response) => {
 			path: 'products',
 		},
 	})
+	if (!category) {
+		return next(new Error(`category with id [${categoryId}] not found.`, { cause: 404 }))
+	}
 	return res.status(200).json({ message: 'success', category })
 }
 
@@ -75,11 +77,11 @@ export const getCategory = async (req = request, res = response) => {
  * @access only admin
  -----------------------------------------------------------------
  */
-export const updateCategory = async (req = request, res = response) => {
+export const updateCategory = async (req = request, res = response, next) => {
 	const categoryId = req.params.categoryId
 	const existingCategory = await categoryModel.findById(categoryId)
 	if (!existingCategory) {
-		return res.status(404).json({ message: 'Category not found' })
+		return next(new Error('Category not found.', { cause: 404 }))
 	}
 	const { name_en, name_ar, description_en, description_ar } = req.body
 	existingCategory.name_en = name_en || existingCategory.name_en

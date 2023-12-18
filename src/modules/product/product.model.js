@@ -1,5 +1,4 @@
 import mongoose, { Schema, Types, model } from 'mongoose'
-import subcategoryModel from '../subcategory/subcategory.model.js'
 
 const productSchema = new Schema(
 	{
@@ -42,6 +41,8 @@ const productSchema = new Schema(
 		},
 	},
 )
+
+productSchema.index({ name_en: 'text', name_ar: 'text', keywords: 'text' })
 
 const productModel = mongoose.models.Product || model('Product', productSchema)
 
