@@ -88,3 +88,20 @@ export const getSubcategory = async (req = request, res = response) => {
 	}
 	return res.status(200).json({ message: 'success', subcategory })
 }
+
+/** ----------------------------------------------------------------
+ * @desc delete subcategory
+ * @route /subcategory/:subcategoryId
+ * @method DELETE
+ * @access only admin
+ -----------------------------------------------------------------
+ */
+export const deleteSubcategory = async (req = request, res = response, next) => {
+	const { subcategoryId } = req.params
+	const subcategoryToDelete = await subcategoryModel.findById(subcategoryId)
+	if (!subcategoryToDelete) {
+		return new Error(`this product with id [${subcategoryId}] not found.`, { cause: 404 })
+	}
+	await subcategoryToDelete.deleteOne()
+	return res.status(200).json({ message: 'success', product: subcategoryToDelete })
+}

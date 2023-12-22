@@ -29,4 +29,5 @@ router
 		validation(validator.updateProduct),
 		asyncHandler(productController.updateProduct),
 	)
+	.delete(validateObjectId('productId'), isAdmin, asyncHandler(productController.deleteProduct))
 export default router

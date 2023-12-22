@@ -24,9 +24,10 @@ router
 		validateObjectId('categoryId'),
 		isAdmin,
 		fileUpload(fileValidation.image).single('image'),
-        validation(validator.updateCategory),
+		validation(validator.updateCategory),
 		asyncHandler(categoryController.updateCategory),
 	)
 	.get(validateObjectId('categoryId'), asyncHandler(categoryController.getCategory))
+	.delete(validateObjectId('categoryId'), isAdmin, asyncHandler(categoryController.deleteCategory))
 
 export default router
