@@ -26,7 +26,11 @@ export const createSubcategory = async (req = request, res = response, next) => 
 		description_en,
 		categoryId,
 	})
-	return res.status(201).json({ message: 'success', subcategory: newSubcategory })
+	const populated = await subcategoryModel.populate(newSubcategory, [
+		{ path: 'categoryId' },
+		{ path: 'products' },
+	])
+	return res.status(201).json({ message: 'success', subcategory: populated })
 }
 
 /** ----------------------------------------------------------------
@@ -37,7 +41,7 @@ export const createSubcategory = async (req = request, res = response, next) => 
    -----------------------------------------------------------------
  */
 export const getSubcategories = async (req = request, res = response, next) => {
-	const subcategories = await subcategoryModel.find().populate('products')
+	const subcategories = await subcategoryModel.find().populate('categoryId').populate('products')
 	return res.status(200).json({ message: 'success', subcategories })
 }
 
@@ -67,7 +71,11 @@ export const updateSubcategory = async (req = request, res = response, next) => 
 	subcategory.description_en = description_en || subcategory.description_en
 	subcategory.description_ar = description_ar || subcategory.description_ar
 	await subcategory.save()
-	return res.status(200).json({ message: 'success', subcategory })
+	const populated = await subcategoryModel.populate(subcategory, [
+		{ path: 'categoryId' },
+		{ path: 'products' },
+	])
+	return res.status(200).json({ message: 'success', subcategory: populated })
 }
 
 /** ----------------------------------------------------------------
@@ -87,4 +95,21 @@ export const getSubcategory = async (req = request, res = response) => {
 		return next(new Error(`subcategory with id [${subcategoryId}] not found.`, { cause: 404 }))
 	}
 	return res.status(200).json({ message: 'success', subcategory })
+}
+
+/** ----------------------------------------------------------------
+ * @desc delete subcategory
+ * @route /subcategory/:subcategoryId
+ * @method DELETE
+ * @access only admin
+ -----------------------------------------------------------------
+ */
+export const deleteSubcategory = async (req = request, res = response, next) => {
+	const { subcategoryId } = req.params
+	const subcategoryToDelete = await subcategoryModel.findById(subcategoryId)
+	if (!subcategoryToDelete) {
+		return next(new Error(`this product with id [${subcategoryId}] not found.`, { cause: 404 }))
+	}
+	await subcategoryToDelete.deleteOne()
+	return res.status(200).json({ message: 'success', subcategory: subcategoryToDelete })
 }

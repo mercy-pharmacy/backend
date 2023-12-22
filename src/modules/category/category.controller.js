@@ -1,6 +1,7 @@
 import { request, response } from 'express'
 import { cloudinaryRemoveImage, cloudinaryUploadImage } from '../../services/cloudinary.js'
 import categoryModel from './category.model.js'
+import { populate } from 'dotenv'
 
 /** ----------------------------------------------------------------
  * @desc create new category
@@ -29,7 +30,11 @@ export const createCategory = async (req = request, res = response, next) => {
 		description_en,
 		image: { secure_url, public_id },
 	})
-	return res.status(201).json({ message: 'success', category: newCategory })
+	const populatedCategory = await categoryModel.populate(newCategory, {
+		path: 'subcategories',
+		populate: { path: 'products' },
+	})
+	return res.status(201).json({ message: 'success', category: populatedCategory })
 }
 
 /** ----------------------------------------------------------------
@@ -98,5 +103,28 @@ export const updateCategory = async (req = request, res = response, next) => {
 		existingCategory.image = { secure_url, public_id }
 	}
 	await existingCategory.save()
-	return res.status(200).json({ message: 'success', category: existingCategory })
+	const populatedCategory = await categoryModel.populate(existingCategory, {
+		path: 'subcategories',
+		populate: {
+			path: 'products',
+		},
+	})
+	return res.status(200).json({ message: 'success', category: populatedCategory })
+}
+
+/** ----------------------------------------------------------------
+ * @desc delete category
+ * @route /categories/:categoryId
+ * @method DELETE
+ * @access only admin
+ -----------------------------------------------------------------
+ */
+export const deleteCategory = async (req = request, res = response, next) => {
+	const { categoryId } = req.params
+	const categoryToDelete = await categoryModel.findById(categoryId)
+	if (!categoryToDelete) {
+		return next(new Error(`this category with id [${categoryId}] not found.`, { cause: 404 }))
+	}
+	await categoryToDelete.deleteOne()
+	return res.status(200).json({ message: 'success', category: categoryToDelete })
 }

@@ -1,6 +1,5 @@
 import mongoose, { Schema, Types, model } from 'mongoose'
-import slugify from 'slugify'
-import categoryModel from '../category/category.model.js'
+import productModel from '../product/product.model.js'
 
 const subcategorySchema = new Schema(
 	{
@@ -41,6 +40,21 @@ subcategorySchema.virtual('products', {
 	ref: 'Product',
 	localField: '_id',
 	foreignField: 'subcategoryId',
+})
+
+subcategorySchema.pre('deleteOne', { document: true, query: false }, async function (next) {
+	try {
+		console.log("Now I'm in Pre remove subcategory", this._id)
+		// Delete associated products
+		// Manually trigger the deleteOne middleware for each related product
+		const products = await productModel.find({ subcategoryId: this._id })
+		for (const product of products) {
+			await product.deleteOne()
+		}
+		next() // Proceed with subcategory deletion
+	} catch (error) {
+		next(error) // Prevent subcategory deletion if product removal fails
+	}
 })
 
 const subcategoryModel = mongoose.models.Subcategory || model('Subcategory', subcategorySchema)

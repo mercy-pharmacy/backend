@@ -1,6 +1,6 @@
 import { request, response } from 'express'
-import subcategoryModel from '../subcategory/subcategory.model.js'
 import { cloudinaryRemoveImage, cloudinaryUploadImage } from '../../services/cloudinary.js'
+import subcategoryModel from '../subcategory/subcategory.model.js'
 import productModel from './product.model.js'
 
 /** ----------------------------------------------------------------
@@ -23,7 +23,6 @@ export const createProduct = async (req = request, res = response, next) => {
 		],
 	})
 	if (product) return next(new Error('this product already exists.', { cause: 409 }))
-	if (!req.file) return next(new Error('product image is required.', { cause: 400 }))
 	const { secure_url, public_id } = await cloudinaryUploadImage(
 		req.file.path,
 		`${process.env.APP_NAME}/products`,
@@ -37,7 +36,13 @@ export const createProduct = async (req = request, res = response, next) => {
 		subcategoryId,
 		keywords,
 	})
-	return res.status(201).json({ message: 'success', product: newProduct })
+	const populated = await productModel.populate(newProduct, {
+		path: 'subcategoryId',
+		populate: {
+			path: 'categoryId',
+		},
+	})
+	return res.status(201).json({ message: 'success', product: populated })
 }
 
 /** ----------------------------------------------------------------
@@ -75,7 +80,11 @@ export const updateProduct = async (req = request, res = response, next) => {
 		product.image = { secure_url, public_id }
 	}
 	await product.save()
-	return res.status(200).json({ message: 'success update', product })
+	const populated = await productModel.populate(product, {
+		path: 'subcategoryId',
+		populate: { path: 'categoryId' },
+	})
+	return res.status(200).json({ message: 'success', product: populated })
 }
 
 /** ----------------------------------------------------------------
@@ -107,18 +116,61 @@ export const getProduct = async (req = request, res = response, next) => {
    -----------------------------------------------------------------
  */
 export const getProducts = async (req = request, res = response, next) => {
-	let filter = {}
 	const { search } = req.query
 	if (search) {
-		filter = {
+		let partialSearchFilter = {}
+		let textSearchFilter = {}
+		textSearchFilter = {
 			$text: { $search: search },
 		}
+		partialSearchFilter = {
+			$or: [
+				{ name_ar: { $regex: new RegExp(search, 'i') } },
+				{ name_en: { $regex: new RegExp(search, 'i') } },
+			],
+		}
+		const partialSearchResults = await productModel.find(partialSearchFilter).populate({
+			path: 'subcategoryId',
+			populate: {
+				path: 'categoryId',
+			},
+		})
+		const textSearchResults = await productModel.find(textSearchFilter).populate({
+			path: 'subcategoryId',
+			populate: {
+				path: 'categoryId',
+			},
+		})
+		const partialSearchProductIds = partialSearchResults.map(product => product._id.toString())
+		const uniqueTextSearchResults = textSearchResults.filter(
+			product => !partialSearchProductIds.includes(product._id.toString()),
+		)
+
+		const __products = [...partialSearchResults, ...uniqueTextSearchResults];
+		return res.status(200).json({ message: 'success', products: __products })
 	}
-	const products = await productModel.find(filter).populate({
+	const products = await productModel.find().populate({
 		path: 'subcategoryId',
 		populate: {
 			path: 'categoryId',
 		},
 	})
 	return res.status(200).json({ message: 'success', products })
+}
+
+/** ----------------------------------------------------------------
+ * @desc delete product
+ * @route /products/:productId
+ * @method DELETE
+ * @access only admin
+ -----------------------------------------------------------------
+ */
+export const deleteProduct = async (req = request, res = response, next) => {
+	const { productId } = req.params
+	const productToDelete = await productModel.findById(productId)
+	if (!productToDelete) {
+		return next(new Error(`this product with id [${productId}] not found.`, { cause: 404 }))
+	}
+	await productToDelete.deleteOne()
+	return res.status(200).json({ message: 'success', product: productToDelete })
 }

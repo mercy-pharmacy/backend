@@ -26,5 +26,10 @@ router
 		asyncHandler(subcategoryController.updateSubcategory),
 	)
 	.get(validateObjectId('subcategoryId'), asyncHandler(subcategoryController.getSubcategory))
+	.delete(
+		validateObjectId('subcategoryId'),
+		isAdmin,
+		asyncHandler(subcategoryController.deleteSubcategory),
+	)
 
 export default router
