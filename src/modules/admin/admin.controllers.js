@@ -9,10 +9,12 @@ export const adminLogin = asyncHandler(async (req, res, next) => {
 	const token = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, { expiresIn: '15d' })
 	return res.status(200).json({ message: 'success', token })
 })
+
 export const getAdminUsername = asyncHandler(async (req, res, next) => {
     const admin = await adminModel.findById(req.user.id)
     return res.status(200).json({message:"success", username: admin.username})
 })
+
 export const updateAdminInfo = asyncHandler(async (req, res, next) => {
 	const { username, oldPassword, newPassword } = req.body
 	if ((!oldPassword && newPassword) || (oldPassword && !newPassword)) {
