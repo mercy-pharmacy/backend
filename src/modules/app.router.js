@@ -6,8 +6,9 @@ import productsRouter from './product/product.router.js'
 import subcategoryRouter from './subcategory/subcategory.router.js'
 import adminRouter from './admin/admin.router.js'
 const initApp = (app, express) => {
-	app.use(cors({ origin: process.env.CLIENT_DOMAIN }))
-	app.use(express.json())
+	app.use(express.json({ limit: '50mb' }))
+	app.use(express.urlencoded({ limit: '50mb', extended: true }))
+	app.use(cors({ origin: '*' }))
 	connectDB()
 	app.get('/', (req, res) => {
 		res.json('Welcome to Mercy Pharmacy backend.')
