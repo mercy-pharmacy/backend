@@ -1,12 +1,16 @@
-import cors from 'cors'
+import bodyParser from 'body-parser'
 import connectDB from '../../DB/connection.js'
+import { corsMiddleware } from '../middlewares/corsMidlleware.js'
 import { globalErrorHandling } from '../services/errorHandling.js'
+import adminRouter from './admin/admin.router.js'
 import categoriesRouter from './category/category.router.js'
 import productsRouter from './product/product.router.js'
 import subcategoryRouter from './subcategory/subcategory.router.js'
-import adminRouter from './admin/admin.router.js'
+
 const initApp = (app, express) => {
-	app.use(cors({ origin: process.env.CLIENT_DOMAIN }))
+	app.use(corsMiddleware())
+	app.use(bodyParser.json({ limit: '50mb' }))
+	app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }))
 	app.use(express.json())
 	connectDB()
 	app.get('/', (req, res) => {

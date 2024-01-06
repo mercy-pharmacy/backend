@@ -1,15 +1,6 @@
 import { request, response } from 'express'
 import jwt from 'jsonwebtoken'
 import adminModel from '../modules/admin/admin.model.js'
-// const isAdmin = (req = request, res = response, next) => {
-// 	const token = req.headers['admin-token']
-// 	if (token == process.env.ADMIN_SECRET_KEY) {
-// 		next()
-// 	} else {
-// 		return res.status(401).json({ message: 'Unauthorized.' })
-// 	}
-// }
-
 const isAdmin = async (req = request, res = response, next) => {
 	const token = req.headers['admin-token']
 	try {
