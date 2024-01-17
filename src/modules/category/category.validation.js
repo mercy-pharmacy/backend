@@ -7,13 +7,13 @@ export const createCategory = joi.object({
 	description_ar: joi.string().max(300).label('Arabic description'),
 	description_en: joi.string().max(300).label('English description'),
 	file: generalFields.file.required().label('image'),
-	sort_order: joi.number()
+	sort_order: joi.number(),
 })
 export const updateCategory = joi.object({
 	name_en: joi.string().min(3).max(50).label('English name'),
 	name_ar: joi.string().min(3).max(50).label('Arabic name'),
-	description_ar: joi.string().max(300).label('Arabic description'),
-	description_en: joi.string().max(300).label('English description'),
+	description_ar: joi.string().max(300).allow('').label('Arabic description'),
+	description_en: joi.string().max(300).allow('').label('English description'),
 	file: generalFields.file.label('image'),
-	sort_order: joi.number()
+	sort_order: joi.number(),
 })
