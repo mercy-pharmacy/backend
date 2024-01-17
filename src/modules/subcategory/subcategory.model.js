@@ -24,6 +24,10 @@ const subcategorySchema = new Schema(
 			ref: 'Category',
 			required: true,
 		},
+		sort_order: {
+			type: Number,
+			default: 0
+		}
 	},
 	{
 		timestamps: true,

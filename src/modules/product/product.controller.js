@@ -11,7 +11,7 @@ import productModel from './product.model.js'
    -----------------------------------------------------------------
  */
 export const createProduct = async (req = request, res = response, next) => {
-	const { name_en, name_ar, description_en, description_ar, subcategoryId, keywords } = req.body
+	const { name_en, name_ar, description_en, description_ar, subcategoryId, keywords, sort_order } = req.body
 	const subcategory = await subcategoryModel.findById(subcategoryId)
 	if (!subcategory) {
 		return next(new Error(`this subcategory with id [${subcategoryId}] not found.`, { cause: 404 }))
@@ -35,6 +35,7 @@ export const createProduct = async (req = request, res = response, next) => {
 		image: { secure_url, public_id },
 		subcategoryId,
 		keywords,
+		sort_order
 	})
 	const populated = await productModel.populate(newProduct, {
 		path: 'subcategoryId',
@@ -58,7 +59,7 @@ export const updateProduct = async (req = request, res = response, next) => {
 	if (!product) {
 		return next(new Error(`product with id [${productId}] not found.`, { cause: 404 }))
 	}
-	const { name_en, name_ar, description_en, description_ar, subcategoryId, keywords } = req.body
+	const { name_en, name_ar, description_en, description_ar, subcategoryId, keywords, sort_order } = req.body
 	if (subcategoryId) {
 		const subcategory = await subcategoryModel.findById(subcategoryId)
 		if (!subcategory) {
@@ -71,6 +72,8 @@ export const updateProduct = async (req = request, res = response, next) => {
 	product.description_en = description_en || product.description_en
 	product.description_ar = description_ar || product.description_ar
 	product.keywords = keywords || product.keywords
+	product.sort_order = sort_order || product.sort_order
+
 	if (req.file) {
 		const { secure_url, public_id } = await cloudinaryUploadImage(
 			req.file.path,

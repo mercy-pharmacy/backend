@@ -11,7 +11,7 @@ import { populate } from 'dotenv'
    -----------------------------------------------------------------
  */
 export const createCategory = async (req = request, res = response, next) => {
-	const { name_en, name_ar, description_en, description_ar } = req.body
+	const { name_en, name_ar, description_en, description_ar, sort_order } = req.body
 	const category = await categoryModel.findOne({ $or: [{ name_ar }, { name_en }] })
 	if (category) {
 		return next(new Error('this categroy already exists.', { cause: 409 }))
@@ -28,6 +28,7 @@ export const createCategory = async (req = request, res = response, next) => {
 		name_en,
 		description_ar,
 		description_en,
+		sort_order,
 		image: { secure_url, public_id },
 	})
 	const populatedCategory = await categoryModel.populate(newCategory, {
@@ -88,11 +89,12 @@ export const updateCategory = async (req = request, res = response, next) => {
 	if (!existingCategory) {
 		return next(new Error('Category not found.', { cause: 404 }))
 	}
-	const { name_en, name_ar, description_en, description_ar } = req.body
+	const { name_en, name_ar, description_en, description_ar, sort_order } = req.body
 	existingCategory.name_en = name_en || existingCategory.name_en
 	existingCategory.name_ar = name_ar || existingCategory.name_ar
 	existingCategory.description_en = description_en || existingCategory.description_en
 	existingCategory.description_ar = description_ar || existingCategory.description_ar
+	existingCategory.sort_order = sort_order || existingCategory.sort_order
 
 	if (req.file) {
 		const { secure_url, public_id } = await cloudinaryUploadImage(

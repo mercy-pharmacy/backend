@@ -10,7 +10,7 @@ import subcategoryModel from './subcategory.model.js'
    -----------------------------------------------------------------
  */
 export const createSubcategory = async (req = request, res = response, next) => {
-	const { name_en, name_ar, description_en, description_ar, categoryId } = req.body
+	const { name_en, name_ar, description_en, description_ar, categoryId, sort_order } = req.body
 	const category = await categoryModel.findById(categoryId)
 	if (!category) {
 		return next(new Error(`category with id [${categoryId}] not found.`, { cuase: 404 }))
@@ -25,6 +25,7 @@ export const createSubcategory = async (req = request, res = response, next) => 
 		description_ar,
 		description_en,
 		categoryId,
+		sort_order
 	})
 	const populated = await subcategoryModel.populate(newSubcategory, [
 		{ path: 'categoryId' },
@@ -58,7 +59,7 @@ export const updateSubcategory = async (req = request, res = response, next) => 
 	if (!subcategory) {
 		return next(new Error(`subcategory with id [${subcategoryId}] not found.`, { cause: 404 }))
 	}
-	const { name_en, name_ar, description_en, description_ar, categoryId } = req.body
+	const { name_en, name_ar, description_en, description_ar, categoryId, sort_order } = req.body
 	if (categoryId) {
 		const category = await categoryModel.findById(categoryId)
 		if (!category) {
@@ -70,6 +71,8 @@ export const updateSubcategory = async (req = request, res = response, next) => 
 	subcategory.name_en = name_en || subcategory.name_en
 	subcategory.description_en = description_en || subcategory.description_en
 	subcategory.description_ar = description_ar || subcategory.description_ar
+	subcategory.sort_order = sort_order || subcategory.sort_order
+	
 	await subcategory.save()
 	const populated = await subcategoryModel.populate(subcategory, [
 		{ path: 'categoryId' },

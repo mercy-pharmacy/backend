@@ -9,6 +9,7 @@ export const createProduct = joi.object({
 	file: generalFields.file.required().label('image'),
 	subcategoryId: joi.string().min(24).max(24).required().label('Subcategory Id'),
 	keywords: joi.array().items(joi.string()).label('Keywords'),
+	sort_order: joi.number()
 })
 
 export const updateProduct = joi.object({
@@ -19,6 +20,7 @@ export const updateProduct = joi.object({
 	file: generalFields.file.label('image'),
 	subcategoryId: joi.string().min(24).max(24).label('Subcategory Id'),
 	keywords: joi.array().items(joi.string()).label('Keywords'),
+	sort_order: joi.number()
 })
 
 export const searchProduct = joi.object({

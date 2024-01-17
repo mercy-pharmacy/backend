@@ -31,6 +31,10 @@ const productSchema = new Schema(
 		keywords: {
 			type: [String],
 		},
+		sort_order: {
+			type: Number,
+			default: 0
+		}
 	},
 	{
 		timestamps: true,

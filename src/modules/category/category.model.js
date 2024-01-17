@@ -25,6 +25,10 @@ const categorySchema = new Schema(
 			type: Object,
 			required: true,
 		},
+		sort_order: {
+			type: Number,
+			default: 0
+		}
 	},
 	{
 		timestamps: true,
