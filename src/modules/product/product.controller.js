@@ -69,8 +69,8 @@ export const updateProduct = async (req = request, res = response, next) => {
 	}
 	product.name_ar = name_ar || product.name_ar
 	product.name_en = name_en || product.name_en
-	product.description_en = description_en || product.description_en
-	product.description_ar = description_ar || product.description_ar
+	product.description_en = description_en 
+	product.description_ar = description_ar
 	product.keywords = keywords || product.keywords
 	product.sort_order = sort_order || product.sort_order
 

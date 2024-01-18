@@ -69,10 +69,10 @@ export const updateSubcategory = async (req = request, res = response, next) => 
 	}
 	subcategory.name_ar = name_ar || subcategory.name_ar
 	subcategory.name_en = name_en || subcategory.name_en
-	subcategory.description_en = description_en || subcategory.description_en
-	subcategory.description_ar = description_ar || subcategory.description_ar
+	subcategory.description_en = description_en
+	subcategory.description_ar = description_ar
 	subcategory.sort_order = sort_order || subcategory.sort_order
-	
+
 	await subcategory.save()
 	const populated = await subcategoryModel.populate(subcategory, [
 		{ path: 'categoryId' },

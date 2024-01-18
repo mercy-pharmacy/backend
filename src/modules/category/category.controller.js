@@ -92,8 +92,8 @@ export const updateCategory = async (req = request, res = response, next) => {
 	const { name_en, name_ar, description_en, description_ar, sort_order } = req.body
 	existingCategory.name_en = name_en || existingCategory.name_en
 	existingCategory.name_ar = name_ar || existingCategory.name_ar
-	existingCategory.description_en = description_en || existingCategory.description_en
-	existingCategory.description_ar = description_ar || existingCategory.description_ar
+	existingCategory.description_en = description_en 
+	existingCategory.description_ar = description_ar
 	existingCategory.sort_order = sort_order || existingCategory.sort_order
 
 	if (req.file) {
