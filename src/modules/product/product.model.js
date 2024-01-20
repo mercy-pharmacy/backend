@@ -33,8 +33,8 @@ const productSchema = new Schema(
 		},
 		sort_order: {
 			type: Number,
-			default: 0
-		}
+			default: 0,
+		},
 	},
 	{
 		timestamps: true,
@@ -63,17 +63,7 @@ productSchema.pre('deleteOne', { document: true, query: false }, async function 
 		next(error) // Handle errors and prevent product deletion
 	}
 })
-
-productSchema.pre('deleteOne', { document: true, query: false }, async function (next) {
-	try {
-		console.log("Now I'm in Pre remove product", this._id)
-		// Delete product image from Cloudinary
-		await cloudinaryRemoveImage(this.image.public_id)
-		next() // Proceed with product deletion
-	} catch (error) {
-		next(error) // Handle errors and prevent product deletion
-	}
-})
+ 
 
 const productModel = mongoose.models.Product || model('Product', productSchema)
 

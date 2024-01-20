@@ -11,7 +11,8 @@ import productModel from './product.model.js'
    -----------------------------------------------------------------
  */
 export const createProduct = async (req = request, res = response, next) => {
-	const { name_en, name_ar, description_en, description_ar, subcategoryId, keywords, sort_order } = req.body
+	const { name_en, name_ar, description_en, description_ar, subcategoryId, keywords, sort_order } =
+		req.body
 	const subcategory = await subcategoryModel.findById(subcategoryId)
 	if (!subcategory) {
 		return next(new Error(`this subcategory with id [${subcategoryId}] not found.`, { cause: 404 }))
@@ -35,7 +36,7 @@ export const createProduct = async (req = request, res = response, next) => {
 		image: { secure_url, public_id },
 		subcategoryId,
 		keywords,
-		sort_order
+		sort_order,
 	})
 	const populated = await productModel.populate(newProduct, {
 		path: 'subcategoryId',
@@ -59,7 +60,8 @@ export const updateProduct = async (req = request, res = response, next) => {
 	if (!product) {
 		return next(new Error(`product with id [${productId}] not found.`, { cause: 404 }))
 	}
-	const { name_en, name_ar, description_en, description_ar, subcategoryId, keywords, sort_order } = req.body
+	const { name_en, name_ar, description_en, description_ar, subcategoryId, keywords, sort_order } =
+		req.body
 	if (subcategoryId) {
 		const subcategory = await subcategoryModel.findById(subcategoryId)
 		if (!subcategory) {
@@ -67,12 +69,12 @@ export const updateProduct = async (req = request, res = response, next) => {
 		}
 		product.subcategoryId = subcategoryId
 	}
-	product.name_ar = name_ar || product.name_ar
-	product.name_en = name_en || product.name_en
-	product.description_en = description_en 
-	product.description_ar = description_ar
-	product.keywords = keywords || product.keywords
-	product.sort_order = sort_order || product.sort_order
+	if (name_ar) product.name_ar = name_ar
+	if (name_en) product.name_en = name_en
+	if (description_en !== undefined) product.description_en = description_en
+	if (description_ar !== undefined) product.description_ar = description_ar
+	if (keywords) product.keywords = keywords
+	if (sort_order) product.sort_order = sort_order
 
 	if (req.file) {
 		const { secure_url, public_id } = await cloudinaryUploadImage(
@@ -149,7 +151,7 @@ export const getProducts = async (req = request, res = response, next) => {
 			product => !partialSearchProductIds.includes(product._id.toString()),
 		)
 
-		const __products = [...partialSearchResults, ...uniqueTextSearchResults];
+		const __products = [...partialSearchResults, ...uniqueTextSearchResults]
 		return res.status(200).json({ message: 'success', products: __products })
 	}
 	const products = await productModel.find().populate({

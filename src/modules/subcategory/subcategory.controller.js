@@ -25,7 +25,7 @@ export const createSubcategory = async (req = request, res = response, next) => 
 		description_ar,
 		description_en,
 		categoryId,
-		sort_order
+		sort_order,
 	})
 	const populated = await subcategoryModel.populate(newSubcategory, [
 		{ path: 'categoryId' },
@@ -67,11 +67,11 @@ export const updateSubcategory = async (req = request, res = response, next) => 
 		}
 		subcategory.categoryId = categoryId
 	}
-	subcategory.name_ar = name_ar || subcategory.name_ar
-	subcategory.name_en = name_en || subcategory.name_en
-	subcategory.description_en = description_en
-	subcategory.description_ar = description_ar
-	subcategory.sort_order = sort_order || subcategory.sort_order
+	if (name_ar) subcategory.name_ar = name_ar
+	if (name_ar) subcategory.name_en = name_en
+	if (description_en !== undefined) subcategory.description_en = description_en
+	if (description_ar !== undefined) subcategory.description_ar = description_ar
+	if (sort_order) subcategory.sort_order = sort_order
 
 	await subcategory.save()
 	const populated = await subcategoryModel.populate(subcategory, [

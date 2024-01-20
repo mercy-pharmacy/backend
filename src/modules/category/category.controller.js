@@ -1,7 +1,6 @@
 import { request, response } from 'express'
 import { cloudinaryRemoveImage, cloudinaryUploadImage } from '../../services/cloudinary.js'
 import categoryModel from './category.model.js'
-import { populate } from 'dotenv'
 
 /** ----------------------------------------------------------------
  * @desc create new category
@@ -46,12 +45,20 @@ export const createCategory = async (req = request, res = response, next) => {
    -----------------------------------------------------------------
  */
 export const getCategories = async (req = request, res = response, next) => {
-	const categories = await categoryModel.find().populate({
-		path: 'subcategories',
-		populate: {
-			path: 'products',
-		},
-	})
+	const { select, populate } = req.params
+	const categoriesQuery = categoryModel.find()
+	if (select) {
+		categoriesQuery.select(select.replaceAll(',', ' '))
+	}
+	if (populate) {
+		categoriesQuery.populate({
+			path: 'subcategories',
+			populate: {
+				path: 'products',
+			},
+		})
+	}
+	const categories = await categoriesQuery
 	return res.status(200).json({ message: 'success', categories })
 }
 
@@ -90,11 +97,11 @@ export const updateCategory = async (req = request, res = response, next) => {
 		return next(new Error('Category not found.', { cause: 404 }))
 	}
 	const { name_en, name_ar, description_en, description_ar, sort_order } = req.body
-	existingCategory.name_en = name_en || existingCategory.name_en
-	existingCategory.name_ar = name_ar || existingCategory.name_ar
-	existingCategory.description_en = description_en 
-	existingCategory.description_ar = description_ar
-	existingCategory.sort_order = sort_order || existingCategory.sort_order
+	if (name_en) existingCategory.name_en = name_en
+	if (name_ar) existingCategory.name_ar = name_ar
+	if (description_en !== undefined) existingCategory.description_en = description_en
+	if (description_ar !== undefined) existingCategory.description_ar = description_ar
+	if (sort_order) existingCategory.sort_order = sort_order
 
 	if (req.file) {
 		const { secure_url, public_id } = await cloudinaryUploadImage(
