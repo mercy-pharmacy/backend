@@ -45,7 +45,7 @@ export const createCategory = async (req = request, res = response, next) => {
    -----------------------------------------------------------------
  */
 export const getCategories = async (req = request, res = response, next) => {
-	const { select, populate } = req.params
+	const { select, populate } = req.query
 	const categoriesQuery = categoryModel.find()
 	if (select) {
 		categoriesQuery.select(select.replaceAll(',', ' '))
